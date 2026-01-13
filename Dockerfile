@@ -13,6 +13,8 @@ WORKDIR /app
 
 COPY . .
 
-RUN composer install --no-dev --no-autoloader --no-progress --classmap-authoritative
+RUN set -eu; \
+    composer install --no-dev --no-autoloader --no-progress --classmap-authoritative; \
+    composer dump-autoload --classmap-authoritative --strict-psr --strict-ambiguous
 
 CMD ["bash", "-c", "make start"]
