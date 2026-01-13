@@ -16,14 +16,23 @@ $twig = Twig::create(__DIR__ . '/../templates', [/*'cache' => __DIR__ . '/../var
 
 $app->add(TwigMiddleware::create($app, $twig));
 
+const HREFS = ['href_urls' => '/urls'];
+
 $app->get('/', function (Request $request, Response $response, $args): Response {
     $view = Twig::fromRequest($request);
-    return $view->render($response, 'main.html.twig', [
-        'href_urls' => '/urls'
-    ]);
+    return $view->render($response, 'main.html.twig', HREFS);
+});
+
+$app->get('/urls', function (Request $request, Response $response, $args): Response {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 'urls.html.twig', HREFS);
 });
 
 $app->post('/urls', function (Request $request, Response $response, $args): Response {
+    $params = $request->getParsedBody();
+    if (!empty($params['url']['name'])) {
+        $response->getBody()->write(var_export(parse_url($params['url']['name']), true));
+    }
     return $response;
 });
 
