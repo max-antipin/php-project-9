@@ -19,7 +19,7 @@ $app->add(TwigMiddleware::create($app, $twig));
 $app->get('/', function (Request $request, Response $response, $args): Response {
     $view = Twig::fromRequest($request);
     return $view->render($response, 'main.html.twig', [
-        'url_urls' => '/urls'
+        'href_urls' => '/urls'
     ]);
 });
 
