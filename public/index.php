@@ -12,15 +12,19 @@ use Slim\Views\TwigMiddleware;
 
 $app = AppFactory::create();
 
-$twig = Twig::create(__DIR__ . '/../templates', ['cache' => __DIR__ . '/../var/cache']);
+$twig = Twig::create(__DIR__ . '/../templates', [/*'cache' => __DIR__ . '/../var/cache'*/]);
 
 $app->add(TwigMiddleware::create($app, $twig));
 
-$app->get('/', function (Request $request, Response $response, $args) {
+$app->get('/', function (Request $request, Response $response, $args): Response {
     $view = Twig::fromRequest($request);
     return $view->render($response, 'main.html.twig', [
-        'text' => 'Hello world!'
+        'url_urls' => '/urls'
     ]);
+});
+
+$app->post('/urls', function (Request $request, Response $response, $args): Response {
+    return $response;
 });
 
 $app->run();
