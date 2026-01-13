@@ -1,0 +1,28 @@
+{
+    "name": "hexlet/code",
+    "description": "Hexlet demo project 3",
+    "type": "project",
+    "require-dev": {
+        "phpstan/phpstan": "^2.1",
+        "php": "^8.3",
+        "squizlabs/php_codesniffer": "^4.0",
+        "phpunit/phpunit": "^12.5"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Hexlet\\Code\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Max Antipin",
+            "email": "max.v.antipin@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "slim/slim": "^4.15",
+        "guzzlehttp/psr7": "^2"
+    }
+}
