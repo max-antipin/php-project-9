@@ -11,6 +11,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
+use Symfony\Component\DomCrawler\Crawler;
 
 $app = AppFactory::create();
 
@@ -47,10 +48,17 @@ $app->post('/urls', function (Request $request, Response $response, $args): Resp
         $isUrl = static fn (string $u): bool => ($u = parse_url($u)) && !empty($u['host']) && isset($u['scheme']) && isset(['http' => 1, 'https' => 1][$u['scheme']]);
         // filter_var($params['url']['name'], FILTER_VALIDATE_URL) // не работает с национальными URL (https://дом.рф)
         if ($isUrl($url)) {
-            $client = new Client();
+            $client = new Client(['http_errors' => false]);
             try {
                 $r = $client->get($url);
-                $text = $url . ' ' . $r->getStatusCode();
+                $text = $url . ' ' . $r->getStatusCode() . ' ' . $r->getHeaderLine('content-type') . ' ' . var_export(false !== strpos($r->getHeaderLine('content-type'), 'text/html'), true);
+                $crawler = new Crawler($r->getBody()->getContents());
+                foreach (['h1', 'title', 'meta[name="description"][content]'] as $selector) {
+                    echo $selector, PHP_EOL;
+                    foreach ($crawler->filter($selector) as $node) {
+                        var_dump($node->nodeName === 'meta' ? $node->getAttribute('content') : $node->nodeValue);
+                    }
+                }
             } catch (RequestException $e) {
                 $text = $e->getMessage();
             }
