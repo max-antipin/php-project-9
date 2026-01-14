@@ -28,11 +28,29 @@ $app->get('/urls', function (Request $request, Response $response, $args): Respo
     return $view->render($response, 'urls.html.twig', HREFS);
 });
 
+$app->get('/urls/{id}', function (Request $request, Response $response, $args): Response {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 'url.html.twig', [...HREFS, 'url_id' => $args['id']]);
+});
+
+$app->get('/urls/{id}/checks', function (Request $request, Response $response, $args): Response {
+    $view = Twig::fromRequest($request);
+    return $view->render($response, 'checks.html.twig', HREFS);
+});
+
 $app->post('/urls', function (Request $request, Response $response, $args): Response {
     $params = $request->getParsedBody();
     if (!empty($params['url']['name'])) {
-        $response->getBody()->write(var_export(parse_url($params['url']['name']), true));
+        $url = $params['url']['name'];
+        $isUrl = static fn (string $u): bool => ($u = parse_url($u)) && !empty($u['host']) && isset($u['scheme']) && isset(['http' => 1, 'https' => 1][$u['scheme']]);
+        // filter_var($params['url']['name'], FILTER_VALIDATE_URL) // не работает с национальными URL (https://дом.рф)
+        $response->getBody()->write($isUrl($url) ? $url : 'Invalid URL');
     }
+    return $response;
+});
+
+$app->post('/urls/{id}/checks', function (Request $request, Response $response, $args): Response {
+    $response->getBody()->write($args['id']);
     return $response;
 });
 
