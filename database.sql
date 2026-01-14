@@ -14,5 +14,5 @@ CREATE TABLE public.url_checks (
 	title varchar NOT NULL,
 	description text NOT NULL,
 	created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
-	CONSTRAINT url_checks_pk PRIMARY KEY (id)
+	CONSTRAINT url_checks_urls_fk FOREIGN KEY (url_id) REFERENCES public.urls(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
