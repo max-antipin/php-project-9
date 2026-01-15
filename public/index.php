@@ -33,12 +33,7 @@ $app->get('/urls', function (Request $request, Response $response, $args): Respo
 
 $app->get('/urls/{id}', function (Request $request, Response $response, $args): Response {
     $view = Twig::fromRequest($request);
-    return $view->render($response, 'url.html.twig', [...HREFS, 'url_id' => $args['id']]);
-});
-
-$app->get('/urls/{id}/checks', function (Request $request, Response $response, $args): Response {
-    $view = Twig::fromRequest($request);
-    return $view->render($response, 'checks.html.twig', HREFS);
+    return $view->render($response, 'url.html.twig', [...HREFS, 'url_id' => $args['id'], 'alert' => 'Страница успешно добавлена']);//Страница успешно проверена
 });
 
 $app->post('/urls', function (Request $request, Response $response, $args): Response {
