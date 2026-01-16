@@ -66,7 +66,7 @@ final class Controller
         );
     }
 
-    public function addUrl(Request $request, Response $response, array $args): Response
+    public function addUrl(Request $request, Response $response): Response
     {
         $params = $request->getParsedBody();
         $url = '';
@@ -125,11 +125,17 @@ final class Controller
 
     public function showUrls(Request $request, Response $response): Response
     {
-        $urls = DB::select(
-            'urls',
-            '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created',
-            order_by:'created_at DESC'
-        );
+        $urls = DB::query(<<<QUERY
+SELECT u.id, u.name, c.status_code, TO_CHAR(c.created_at, 'YYYY-MM-DD HH24:MI:SS') AS last FROM urls AS u
+LEFT JOIN (
+        SELECT
+            url_id, status_code, created_at,
+            ROW_NUMBER() OVER (PARTITION BY url_id ORDER BY created_at DESC) AS rn
+        FROM url_checks
+    ) AS c ON u.id = c.url_id
+WHERE rn = 1
+ORDER BY u.created_at DESC
+QUERY   );
         $routeParser = $this->getRouteParser($request);
         return $this->render(
             $request,
