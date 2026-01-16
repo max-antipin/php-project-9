@@ -42,7 +42,7 @@ $app->add(
     }
 );
 $app->addErrorMiddleware(true, true, true);
-$twig = Twig::create(__DIR__ . '/../templates', ['cache' => __DIR__ . '/../var/cache']);
+$twig = Twig::create(__DIR__ . '/../templates');
 $app->add(TwigMiddleware::create($app, $twig));
 $controller = new Controller($container);
 
