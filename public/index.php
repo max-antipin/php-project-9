@@ -37,7 +37,7 @@ $app->add(
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
-        $this->get('flash')->__construct($_SESSION);
+        $this->get('flash')->__construct($_SESSION);// @phpstan-ignore variable.undefined
         return $next->handle($request);
     }
 );

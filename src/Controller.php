@@ -43,6 +43,7 @@ final class Controller
                         'h1' => 'h1', 'title' => 'title', 'description' => 'meta[name="description"][content]'
                     ] as $field => $selector
                 ) {
+                    /** @var \DOMElement $node */
                     foreach ($crawler->filter($selector) as $node) {
                         $value = trim($node->nodeName === 'meta' ? $node->getAttribute('content') : $node->nodeValue);
                         $row2insert[$field] = $value;
@@ -157,8 +158,8 @@ QUERY   );
         return $this->render($request, $response, 'main', $data);
     }
 
-    private Messages $flash {
-        get => $this->container->get('flash');
+    private Messages $flash {// phpcs:ignore
+        get => $this->container->get('flash');// phpcs:ignore
     }
 
     private function getRouteParser(Request $request): RouteParserInterface

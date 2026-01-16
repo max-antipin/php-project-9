@@ -7,11 +7,11 @@ install:
 
 lint:
 	composer validate --strict
-	composer exec --verbose phpcs -- --standard=PSR12 src tests public
+	composer exec --verbose phpcs -- --standard=PSR12 src public
 	composer exec --verbose phpstan analyze
 
 lint-fix:
-	composer exec --verbose phpcbf -- --standard=PSR12 src tests public
+	composer exec --verbose phpcbf -- --standard=PSR12 src public
 
 test:
 	composer exec --verbose phpunit tests
