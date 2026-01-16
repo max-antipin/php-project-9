@@ -94,8 +94,12 @@ final class Controller
                 );
             }
         }
-        $this->flash->addMessage('invalid_url', $url);
-        return $response->withStatus(302)->withHeader('Location', $this->getRouteParser($request)->urlFor('home'));
+        return $this->render(
+            $request,
+            $response,
+            'main',
+            ['invalid_url' => true, 'i_url_value' => $url]
+        )->withStatus(422);
     }
 
     public function showUrl(Request $request, Response $response, array $args): Response
