@@ -1,5 +1,49 @@
 {% extends "main.html.twig" %}
 
 {% block content %}
-URL...
+<h1>Сайт: {{ url.name }}</h1>
+<div class="table-responsive">
+    <table class="table table-bordered table-hover text-nowrap" data-test="url">
+        <tbody>
+            <tr>
+            <td>ID</td>
+            <td>{{ url.id }}</td>
+            </tr>
+            <tr>
+            <td>Имя</td>
+            <td>{{ url.name }}</td>
+            </tr>
+            <tr>
+            <td>Дата создания</td>
+            <td>{{ url.created }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<h2 class="mt-5 mb-3">Проверки</h2>
+<form method="post" action="{{ href_checks }}">
+    <input type="submit" class="btn btn-primary" value="Запустить проверку">
+</form>
+<table class="table table-bordered table-hover" data-test="checks">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Код ответа</th>
+            <th>h1</th>
+            <th>title</th>
+            <th>description</th>
+            <th>Дата создания</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td>200</td>
+            <td class="text-break">Search code, repositories, users, issues, pull requests...</td>
+            <td class="text-break">GitHub · Change is constant. GitHub keeps you ahead. · GitHub</td>
+            <td class="text-break">Join the world's most widely adopted, AI-powered developer platform where millions of developers, businesses, and the largest open source community build software that advances humanity.</td>
+            <td>2026-01-15 18:36:37</td>
+        </tr>
+    </tbody>
+</table>
 {% endblock %}
