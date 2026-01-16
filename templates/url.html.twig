@@ -36,14 +36,16 @@
         </tr>
     </thead>
     <tbody>
+        {% for url_check in url_checks %}
         <tr>
-            <td>1</td>
-            <td>200</td>
-            <td class="text-break">Search code, repositories, users, issues, pull requests...</td>
-            <td class="text-break">GitHub · Change is constant. GitHub keeps you ahead. · GitHub</td>
-            <td class="text-break">Join the world's most widely adopted, AI-powered developer platform where millions of developers, businesses, and the largest open source community build software that advances humanity.</td>
-            <td>2026-01-15 18:36:37</td>
+            <td>{{ url_check.id }}</td>
+            <td>{{ url_check.status_code }}</td>
+            <td class="text-break">{{ url_check.h1 }}</td>
+            <td class="text-break">{{ url_check.title }}</td>
+            <td class="text-break">{{ url_check.description }}</td>
+            <td>{{ url_check.created }}</td>
         </tr>
+        {% endfor %}
     </tbody>
 </table>
 {% endblock %}

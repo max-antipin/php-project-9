@@ -6,7 +6,9 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 use DI\ContainerBuilder;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
+use Hexlet\Code\Controller;
 use MaxieSystems\DBAL\DB;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -28,7 +30,7 @@ DB::Add(
 $containerBuilder = new ContainerBuilder();
 $containerBuilder->addDefinitions(
     [
-        'flash' => function () {
+        'flash' => static function (): Messages {
             $storage = [];
             return new Messages($storage);
         }
@@ -49,28 +51,12 @@ $app->add(
 $app->addErrorMiddleware(true, true, true);
 $twig = Twig::create(__DIR__ . '/../templates', [/*'cache' => __DIR__ . '/../var/cache'*/]);
 $app->add(TwigMiddleware::create($app, $twig));
-
+$controller = new Controller($container);
 const HREFS = ['href_urls' => '/urls'];
 
-$app->get('/', function (Request $request, Response $response, array $args): Response {
-    $view = Twig::fromRequest($request);
-    $data = HREFS;
-    $flash = $this->get('flash');
-    if ($flash->hasMessage('invalid_url')) {
-        $data['invalid_url'] = true;
-        $data['i_url_value'] = $flash->getFirstMessage('invalid_url');
-    }
-    return $view->render($response, 'main.html.twig', $data);
-})->setName('home');
+$app->get('/', [$controller, 'showHomepage'])->setName('home');
 
-$app->get('/urls', function (Request $request, Response $response, array $args): Response {
-    $view = Twig::fromRequest($request);
-    $urls = DB::select('urls', '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created', order_by:'created_at DESC');
-    $routeParser = RouteContext::fromRequest($request)->getRouteParser();
-    return $view->render($response, 'urls.html.twig', [...HREFS, 'urls' => $urls->setCallback(static function (object $row) use ($routeParser): void {
-        $row->href = $routeParser->urlFor('url', ['id' => $row->id]);
-    })]);
-})->setName('urls');
+$app->get('/urls', [$controller, 'showUrls'])->setName('urls');
 
 $app->get('/urls/{id:[0-9]+}', function (Request $request, Response $response, array $args): Response {
     $data = [...HREFS, 'url_id' => $args['id']];
@@ -85,6 +71,7 @@ $app->get('/urls/{id:[0-9]+}', function (Request $request, Response $response, a
         return $view->render($response, 'error.html.twig', $data)->withStatus(404);
     }
     $data['url'] = $res->fetch();
+    $data['url_checks'] = DB::select('url_checks', '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created', order_by:'created_at DESC');
     $data['href_checks'] = RouteContext::fromRequest($request)->getRouteParser()->urlFor('checks', ['id' => $data['url']->id]);
     return $view->render($response, 'url.html.twig', $data);
 })->setName('url');
@@ -113,7 +100,7 @@ $app->post('/urls', function (Request $request, Response $response, array $args)
     }
     $flash->addMessage('invalid_url', $url);
     return $response->withStatus(302)->withHeader('Location', $routeParser->urlFor('home'));
-});
+})->setName('add_url');
 
 $app->post('/urls/{id:[0-9]+}/checks', function (Request $request, Response $response, array $args): Response {
     $flash = $this->get('flash');
@@ -121,22 +108,30 @@ $app->post('/urls/{id:[0-9]+}/checks', function (Request $request, Response $res
     $res = DB::select('urls', '*', 'id = ?', [$args['id']]);
     if (!count($res)) {
         $flash->addMessage('alert', 'URL не найден');
-        return $response->withStatus(404)->withHeader('Location', $routeParser->urlFor('urls'));
+        return $response->withStatus(302)->withHeader('Location', $routeParser->urlFor('urls'));
     }
     $url = $res->fetch();
     $client = new Client(['http_errors' => false]);
     try {
         $r = $client->get($url->name);
-        $text = $url->name . ' ' . $r->getStatusCode() . ' ' . $r->getHeaderLine('content-type') . ' ' . var_export(false !== strpos($r->getHeaderLine('content-type'), 'text/html'), true);
-        $crawler = new Crawler($r->getBody()->getContents());
-        foreach (['h1', 'title', 'meta[name="description"][content]'] as $selector) {
-            echo $selector, PHP_EOL;
-            foreach ($crawler->filter($selector) as $node) {
-                var_dump($node->nodeName === 'meta' ? $node->getAttribute('content') : $node->nodeValue);
+        if (false !== strpos($r->getHeaderLine('content-type'), 'text/html')) {
+            $crawler = new Crawler($r->getBody()->getContents());
+            $row2insert = ['url_id' => $args['id'], 'status_code' => $r->getStatusCode()];
+            foreach (['h1' => 'h1', 'title' => 'title', 'description' => 'meta[name="description"][content]'] as $field => $selector) {
+                foreach ($crawler->filter($selector) as $node) {
+                    $value = trim($node->nodeName === 'meta' ? $node->getAttribute('content') : $node->nodeValue);    
+                    $row2insert[$field] = $value;
+                    if ($value !== '') {
+                        break;
+                    }
+                }
             }
+            DB::insert('url_checks', $row2insert);
+            $msg = 'Страница успешно проверена';
+        } else {
+            $msg = 'Это не HTML-документ';
         }
-        $msg = 'Страница успешно проверена';
-    } catch (RequestException $e) {
+    } catch (RequestException | ConnectException $e) {
         $msg = $e->getMessage();
     }
     $flash->addMessage('alert', $msg);
