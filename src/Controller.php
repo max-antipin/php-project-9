@@ -38,7 +38,11 @@ final class Controller
             if (false !== strpos($r->getHeaderLine('content-type'), 'text/html')) {
                 $crawler = new Crawler($r->getBody()->getContents());
                 $row2insert = ['url_id' => $args['id'], 'status_code' => $r->getStatusCode()];
-                foreach (['h1' => 'h1', 'title' => 'title', 'description' => 'meta[name="description"][content]'] as $field => $selector) {
+                foreach (
+                    [
+                        'h1' => 'h1', 'title' => 'title', 'description' => 'meta[name="description"][content]'
+                    ] as $field => $selector
+                ) {
                     foreach ($crawler->filter($selector) as $node) {
                         $value = trim($node->nodeName === 'meta' ? $node->getAttribute('content') : $node->nodeValue);
                         $row2insert[$field] = $value;
@@ -56,7 +60,10 @@ final class Controller
             $msg = $e->getMessage();
         }
         $this->flash->addMessage('alert', $msg);
-        return $response->withStatus(302)->withHeader('Location', $this->getRouteParser($request)->urlFor('url', ['id' => $args['id']]));
+        return $response->withStatus(302)->withHeader(
+            'Location',
+            $this->getRouteParser($request)->urlFor('url', ['id' => $args['id']])
+        );
     }
 
     public function addUrl(Request $request, Response $response, array $args): Response
@@ -65,8 +72,11 @@ final class Controller
         $url = '';
         if (!empty($params['url']['name'])) {
             $url = $params['url']['name'];
-            $isUrl = static fn (string $u): bool => ($u = parse_url($u)) && !empty($u['host']) && isset($u['scheme']) && isset(['http' => 1, 'https' => 1][$u['scheme']]);
-            // filter_var($params['url']['name'], FILTER_VALIDATE_URL) // не работает с национальными URL (https://дом.рф)
+            $isUrl = static fn (string $u): bool => ($u = parse_url($u))
+                && !empty($u['host'])
+                && isset($u['scheme'])
+                && isset(['http' => 1, 'https' => 1][$u['scheme']]);
+            //filter_var($params['url']['name'], FILTER_VALIDATE_URL)# не работает с национальными URL (https://дом.рф)
             if ($isUrl($url)) {
                 $res = DB::select('urls', '*', 'name = ?', [$url]);
                 if (\count($res)) {
@@ -77,7 +87,10 @@ final class Controller
                     $msg = 'Страница успешно добавлена';
                 }
                 $this->flash->addMessage('alert', $msg);
-                return $response->withStatus(302)->withHeader('Location', $this->getRouteParser($request)->urlFor('url', ['id' => $urlId]));
+                return $response->withStatus(302)->withHeader(
+                    'Location',
+                    $this->getRouteParser($request)->urlFor('url', ['id' => $urlId])
+                );
             }
         }
         $this->flash->addMessage('invalid_url', $url);
@@ -90,24 +103,42 @@ final class Controller
         if ($this->flash->hasMessage('alert')) {
             $data['alert'] = implode(PHP_EOL, $this->flash->getMessage('alert'));
         }
-        $res = DB::select('urls', '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created', 'id = ?', [$args['id']]);
+        $res = DB::select(
+            'urls',
+            '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created',
+            'id = ?',
+            [$args['id']]
+        );
         if (!\count($res)) {
             $data['status'] = '404';
             return $this->render($request, $response, 'error', $data)->withStatus(404);
         }
         $data['url'] = $res->fetch();
-        $data['url_checks'] = DB::select('url_checks', '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created', order_by:'created_at DESC');
+        $data['url_checks'] = DB::select(
+            'url_checks',
+            '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created',
+            order_by:'created_at DESC'
+        );
         $data['href_checks'] = $this->getRouteParser($request)->urlFor('checks', ['id' => $data['url']->id]);
         return $this->render($request, $response, 'url', $data);
     }
 
     public function showUrls(Request $request, Response $response): Response
     {
-        $urls = DB::select('urls', '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created', order_by:'created_at DESC');
+        $urls = DB::select(
+            'urls',
+            '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created',
+            order_by:'created_at DESC'
+        );
         $routeParser = $this->getRouteParser($request);
-        return $this->render($request, $response, 'urls', ['urls' => $urls->setCallback(static function (object $row) use ($routeParser): void {
-            $row->href = $routeParser->urlFor('url', ['id' => $row->id]);
-        })]);
+        return $this->render(
+            $request,
+            $response,
+            'urls',
+            ['urls' => $urls->setCallback(static function (object $row) use ($routeParser): void {
+                $row->href = $routeParser->urlFor('url', ['id' => $row->id]);
+            })]
+        );
     }
 
     public function showHomepage(Request $request, Response $response): Response
