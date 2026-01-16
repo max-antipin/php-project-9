@@ -1,5 +1,5 @@
 CREATE TABLE public.urls (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
+	id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	name varchar(100) NOT NULL,
 	created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	CONSTRAINT urls_pk PRIMARY KEY (id),
@@ -7,8 +7,8 @@ CREATE TABLE public.urls (
 );
 
 CREATE TABLE public.url_checks (
-	id uuid DEFAULT gen_random_uuid() NOT NULL,
-	url_id uuid NOT NULL,
+	id int GENERATED ALWAYS AS IDENTITY NOT NULL,
+	url_id int NOT NULL,
 	status_code int4 NOT NULL,
 	h1 varchar NOT NULL,
 	title varchar NOT NULL,
