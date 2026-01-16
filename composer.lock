@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6df87d3679b10494d2381b0827121648",
+    "content-hash": "e80e7a57ab3cb358add924bb40d8a861",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -394,16 +394,16 @@
         },
         {
             "name": "maxie-systems/dbal",
-            "version": "v0.0.1",
+            "version": "v0.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/maxie-systems/dbal.git",
-                "reference": "fdc681d926c12688d8b4f01dc0a500fcd7021f0e"
+                "reference": "9d8257e968b84d1ff156bb3272a385d69985cf09"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/maxie-systems/dbal/zipball/fdc681d926c12688d8b4f01dc0a500fcd7021f0e",
-                "reference": "fdc681d926c12688d8b4f01dc0a500fcd7021f0e",
+                "url": "https://api.github.com/repos/maxie-systems/dbal/zipball/9d8257e968b84d1ff156bb3272a385d69985cf09",
+                "reference": "9d8257e968b84d1ff156bb3272a385d69985cf09",
                 "shasum": ""
             },
             "require": {
@@ -435,9 +435,9 @@
             "description": "Simple database abstraction layer for PHP",
             "support": {
                 "issues": "https://github.com/maxie-systems/dbal/issues",
-                "source": "https://github.com/maxie-systems/dbal/tree/v0.0.1"
+                "source": "https://github.com/maxie-systems/dbal/tree/v0.0.2"
             },
-            "time": "2026-01-15T23:56:27+00:00"
+            "time": "2026-01-16T21:12:03+00:00"
         },
         {
             "name": "nikic/fast-route",

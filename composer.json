@@ -28,7 +28,7 @@
         "guzzlehttp/guzzle": "^7.10",
         "symfony/dom-crawler": "^8.0",
         "symfony/css-selector": "^8.0",
-        "maxie-systems/dbal": "^0.0.1",
+        "maxie-systems/dbal": "^0.0.2",
         "php-di/php-di": "^7.1",
         "slim/flash": "^0.4.0"
     }
