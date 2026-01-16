@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "a205f6113db1bba859b0e6914e37cdb0",
+    "content-hash": "f77b6d0a0b93b22f34d1c19df426ea21",
     "packages": [
         {
             "name": "guzzlehttp/guzzle",
@@ -330,6 +330,53 @@
                 }
             ],
             "time": "2025-08-23T21:21:41+00:00"
+        },
+        {
+            "name": "maxie-systems/dbal",
+            "version": "v0.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/maxie-systems/dbal.git",
+                "reference": "fdc681d926c12688d8b4f01dc0a500fcd7021f0e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/maxie-systems/dbal/zipball/fdc681d926c12688d8b4f01dc0a500fcd7021f0e",
+                "reference": "fdc681d926c12688d8b4f01dc0a500fcd7021f0e",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2|^8.3|^8.4"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^12.5",
+                "squizlabs/php_codesniffer": "3.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "MaxieSystems\\DBAL\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Max Antipin",
+                    "email": "max.v.antipin@gmail.com",
+                    "homepage": "https://github.com/max-antipin",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Simple database abstraction layer for PHP",
+            "support": {
+                "issues": "https://github.com/maxie-systems/dbal/issues",
+                "source": "https://github.com/maxie-systems/dbal/tree/v0.0.1"
+            },
+            "time": "2026-01-15T23:56:27+00:00"
         },
         {
             "name": "nikic/fast-route",
