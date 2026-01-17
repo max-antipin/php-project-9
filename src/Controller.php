@@ -24,6 +24,12 @@ final class Controller
     ) {
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array<string, string> $args
+     * @return Response
+     */
     public function checkUrl(Request $request, Response $response, array $args): Response
     {
         $res = DB::select('urls', '*', 'id = ?', [$args['id']]);
@@ -31,10 +37,11 @@ final class Controller
             $this->flash->addMessage('alert', 'URL не найден');
             return $response->withStatus(302)->withHeader('Location', $this->getRouteParser($request)->urlFor('urls'));
         }
+        /** @var object $url */
         $url = $res->fetch();
         $client = new Client(['http_errors' => false]);
         try {
-            $r = $client->get($url->name);
+            $r = $client->get($url->name);// @phpstan-ignore property.notFound
             if (false !== strpos($r->getHeaderLine('content-type'), 'text/html')) {
                 $crawler = new Crawler($r->getBody()->getContents());
                 $row2insert = ['url_id' => $args['id'], 'status_code' => $r->getStatusCode()];
@@ -45,7 +52,7 @@ final class Controller
                 ) {
                     /** @var \DOMElement $node */
                     foreach ($crawler->filter($selector) as $node) {
-                        $value = trim($node->nodeName === 'meta' ? $node->getAttribute('content') : $node->nodeValue);
+                        $value = trim($node->nodeName === 'meta' ? $node->getAttribute('content') : $node->textContent);
                         $row2insert[$field] = $value;
                         if ($value !== '') {
                             break;
@@ -71,7 +78,7 @@ final class Controller
     {
         $params = $request->getParsedBody();
         $url = '';
-        if (!empty($params['url']['name'])) {
+        if (!empty($params['url']['name'])) {// @phpstan-ignore offsetAccess.nonOffsetAccessible
             $url = $params['url']['name'];
             $isUrl = static fn (string $u): bool => ($u = parse_url($u))
                 && !empty($u['host'])
@@ -102,11 +109,17 @@ final class Controller
         )->withStatus(422);
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param array<string, string> $args
+     * @return Response
+     */
     public function showUrl(Request $request, Response $response, array $args): Response
     {
         $data = ['url_id' => $args['id']];
         if ($this->flash->hasMessage('alert')) {
-            $data['alert'] = implode(PHP_EOL, $this->flash->getMessage('alert'));
+            $data['alert'] = implode(PHP_EOL, $this->flash->getMessage('alert'));// @phpstan-ignore argument.type
         }
         $res = DB::select(
             'urls',
@@ -122,9 +135,11 @@ final class Controller
         $data['url_checks'] = DB::select(
             'url_checks',
             '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created',
+            'url_id = ?',
+            [$args['id']],
             order_by:'created_at DESC'
         );
-        $data['href_checks'] = $this->getRouteParser($request)->urlFor('checks', ['id' => $data['url']->id]);
+        $data['href_checks'] = $this->getRouteParser($request)->urlFor('checks', $args);
         return $this->render($request, $response, 'url', $data);
     }
 
@@ -147,7 +162,10 @@ QUERY   );
             $response,
             'urls',
             ['urls' => $urls->setCallback(static function (object $row) use ($routeParser): void {
-                $row->href = $routeParser->urlFor('url', ['id' => $row->id]);
+                $row->href = $routeParser->urlFor(// @phpstan-ignore property.notFound
+                    'url',
+                    ['id' => $row->id]// @phpstan-ignore property.notFound
+                );
             })]
         );
     }
@@ -163,6 +181,7 @@ QUERY   );
     }
 
     private Messages $flash {// phpcs:ignore
+        /** @phpstan-ignore return.type */
         get => $this->container->get('flash');// phpcs:ignore
     }
 
@@ -172,6 +191,13 @@ QUERY   );
         return $routeParser;
     }
 
+    /**
+     * @param Request $request
+     * @param Response $response
+     * @param string $template
+     * @param array<string, mixed> $data
+     * @return Response
+     */
     private function render(Request $request, Response $response, string $template, array $data): Response
     {
         $data['href_urls'] = $this->getRouteParser($request)->urlFor('urls');

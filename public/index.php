@@ -12,7 +12,9 @@ use Slim\Flash\Messages;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
 
-$dbUrl = parse_url($_ENV['DATABASE_URL']);
+if (!($dbUrl = getenv('DATABASE_URL')) || ($dbUrl = parse_url($dbUrl)) === false) {
+    die('Invalid DATABASE_URL');
+}
 DB::Add(
     'PostgreSQL',
     ['dbname' => ltrim($dbUrl['path'], '/'), 'host' => $dbUrl['host'], 'port' => $dbUrl['port']],
