@@ -153,7 +153,7 @@ LEFT JOIN (
             ROW_NUMBER() OVER (PARTITION BY url_id ORDER BY created_at DESC) AS rn
         FROM url_checks
     ) AS c ON u.id = c.url_id
-WHERE rn = 1
+WHERE rn = 1 OR rn IS NULL
 ORDER BY u.created_at DESC
 QUERY   );
         $routeParser = $this->getRouteParser($request);

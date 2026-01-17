@@ -15,12 +15,13 @@ use Slim\Views\TwigMiddleware;
 if (!($dbUrl = getenv('DATABASE_URL')) || ($dbUrl = parse_url($dbUrl)) === false) {
     die('Invalid DATABASE_URL');
 }
-DB::Add(
-    'PostgreSQL',
-    ['dbname' => ltrim($dbUrl['path'], '/'), 'host' => $dbUrl['host'], 'port' => $dbUrl['port']],
-    $dbUrl['user'],
-    $dbUrl['pass']
-);
+$params = ['dbname' => ltrim($dbUrl['path'], '/')];
+foreach (['host', 'port'] as $k) {
+    if (!empty($dbUrl[$k])) {
+        $params[$k] = $dbUrl[$k];
+    }
+}
+DB::Add('PostgreSQL', $params, $dbUrl['user'], $dbUrl['pass']);
 
 $containerBuilder = new ContainerBuilder();
 $containerBuilder->addDefinitions(
