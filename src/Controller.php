@@ -61,7 +61,7 @@ final class Controller
         $client = new Client(['http_errors' => false]);
         try {
             $r = $client->get($url->name);// @phpstan-ignore property.notFound
-            if (false !== strpos($r->getHeaderLine('content-type'), 'text/html')) {
+            if (str_contains($r->getHeaderLine('content-type'), 'text/html')) {
                 $crawler = new Crawler($r->getBody()->getContents());
                 $row2insert = ['url_id' => $args['id'], 'status_code' => $r->getStatusCode()];
                 foreach (
