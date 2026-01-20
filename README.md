@@ -10,5 +10,33 @@
 
 # Учебный проект №3: Анализатор страниц (Hexlet)
 
+Сайт, который анализирует указанные страницы на SEO пригодность.
+
 [View demo](https://php-project-9-77o3.onrender.com/)
 
+## Требования
+- PHP >= 8.3
+- Make
+- Git
+- Composer
+- Docker
+
+## Установка
+```shell
+make install
+```
+
+## Запуск
+```shell
+make start
+```
+
+С помощью Docker:
+```shell
+docker build --tag hexlet-php-project-9:latest .
+```
+
+Git Bash for Windows:
+```shell
+docker run -itd --rm -p 8000:8000 -v "/$PWD:/app" --env-file .env --name hexlet-php-project-9 hexlet-php-project-9:latest
+```
