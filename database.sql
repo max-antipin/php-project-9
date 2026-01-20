@@ -10,9 +10,9 @@ CREATE TABLE public.url_checks (
 	id int GENERATED ALWAYS AS IDENTITY NOT NULL,
 	url_id int NOT NULL,
 	status_code int4 NOT NULL,
-	h1 varchar NOT NULL,
-	title varchar NOT NULL,
-	description text NOT NULL,
+	h1 varchar NOT NULL DEFAULT '',
+	title varchar NOT NULL DEFAULT '',
+	description text NOT NULL DEFAULT '',
 	created_at timestamptz DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	CONSTRAINT url_checks_urls_fk FOREIGN KEY (url_id) REFERENCES public.urls(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
