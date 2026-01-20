@@ -142,7 +142,7 @@ final class Controller
         }
         $res = DB::select(
             'urls',
-            '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created',
+            '*, ' . $this->formatDateCol('created_at', 'created'),
             'id = ?',
             [$args['id']]
         );
@@ -153,7 +153,7 @@ final class Controller
         $data['url'] = $res->fetch();
         $data['url_checks'] = DB::select(
             'url_checks',
-            '*, TO_CHAR(created_at, \'YYYY-MM-DD HH24:MI:SS\') AS created',
+            '*, ' . $this->formatDateCol('created_at', 'created'),
             'url_id = ?',
             [$args['id']],
             order_by:'created_at DESC'
@@ -164,27 +164,26 @@ final class Controller
 
     public function showUrls(Request $request, Response $response): Response
     {
-        $urls = DB::query(<<<QUERY
-SELECT u.id, u.name, c.status_code, TO_CHAR(c.created_at, 'YYYY-MM-DD HH24:MI:SS') AS last FROM urls AS u
-LEFT JOIN (
-        SELECT
-            url_id, status_code, created_at,
-            ROW_NUMBER() OVER (PARTITION BY url_id ORDER BY created_at DESC) AS rn
-        FROM url_checks
-    ) AS c ON u.id = c.url_id
-WHERE rn = 1 OR rn IS NULL
-ORDER BY u.created_at DESC
-QUERY   );
+        $urls = DB::select('urls', 'id, name', order_by:'created_at DESC');
+        $urlChecks = DB::select(
+            'url_checks',
+            'DISTINCT ON (url_id) url_id, status_code, ' . $this->formatDateCol('created_at', 'last'),
+            order_by:'url_id DESC, id DESC'
+        )->fetchAll('url_id');
         $routeParser = $this->getRouteParser($request);
         return $this->render(
             $request,
             $response,
             'urls',
-            ['urls' => $urls->setCallback(static function (object $row) use ($routeParser): void {
+            ['urls' => $urls->setCallback(static function (object $row) use ($routeParser, $urlChecks): void {
                 $row->href = $routeParser->urlFor(// @phpstan-ignore property.notFound
                     'url',
                     ['id' => $row->id]// @phpstan-ignore property.notFound
                 );
+                if (isset($urlChecks[$row->id])) {// @phpstan-ignore property.notFound
+                    $row->status_code = $urlChecks[$row->id]->status_code;// @phpstan-ignore property.notFound
+                    $row->last = $urlChecks[$row->id]->last;// @phpstan-ignore property.notFound
+                }
             })]
         );
     }
@@ -221,5 +220,10 @@ QUERY   );
     {
         $data['href_urls'] = $this->getRouteParser($request)->urlFor('urls');
         return Twig::fromRequest($request)->render($response, "$template.html.twig", $data);
+    }
+
+    private static function formatDateCol(string $col, string $alias): string
+    {
+        return "TO_CHAR($col, 'YYYY-MM-DD HH24:MI:SS') AS $alias";
     }
 }
