@@ -9,8 +9,11 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\RequestException;
 use MaxieSystems\DBAL\DB;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\App;
+use Slim\Exception\HttpException;
 use Slim\Flash\Messages;
 use Slim\Interfaces\RouteParserInterface;
 use Slim\Routing\RouteContext;
@@ -19,9 +22,25 @@ use Symfony\Component\DomCrawler\Crawler;
 
 final class Controller
 {
+    private readonly Container $container;
+
+    /**
+     * @param App<ContainerInterface> $app
+     */
     public function __construct(
-        readonly private Container $container,
+        readonly private App $app,
     ) {
+        $this->container = $app->getContainer();// @phpstan-ignore assign.propertyType
+    }
+
+    public function showErrorPage(Request $request, HttpException $exception, bool $displayErrorDetails): Response
+    {
+        return $this->render(
+            $request,
+            $this->app->getResponseFactory()->createResponse(),
+            'error',
+            ['title' => $exception->getTitle()]
+        )->withStatus($exception->getCode());
     }
 
     /**
@@ -128,7 +147,7 @@ final class Controller
             [$args['id']]
         );
         if (!\count($res)) {
-            $data['status'] = '404';
+            $data['title'] = '404';
             return $this->render($request, $response, 'error', $data)->withStatus(404);
         }
         $data['url'] = $res->fetch();

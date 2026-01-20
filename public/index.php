@@ -7,10 +7,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use DI\ContainerBuilder;
 use Hexlet\Code\Controller;
 use MaxieSystems\DBAL\DB;
+use Psr\Container\ContainerInterface;
+use Slim\App;
 use Slim\Factory\AppFactory;
 use Slim\Flash\Messages;
 use Slim\Views\Twig;
 use Slim\Views\TwigMiddleware;
+use Slim\Exception\HttpNotFoundException;
 
 if (!($dbUrl = getenv('DATABASE_URL')) || ($dbUrl = parse_url($dbUrl)) === false) {
     die('Invalid DATABASE_URL');
@@ -34,6 +37,8 @@ $containerBuilder->addDefinitions(
 );
 $container = $containerBuilder->build();
 AppFactory::setContainer($container);
+
+/** @var App<ContainerInterface> $app */
 $app = AppFactory::create();
 $app->add(
     function ($request, $next) {
@@ -44,15 +49,16 @@ $app->add(
         return $next->handle($request);
     }
 );
-$app->addErrorMiddleware(true, true, true);
+$errorMiddleware = $app->addErrorMiddleware(true, true, true);
 $twig = Twig::create(__DIR__ . '/../templates');
 $app->add(TwigMiddleware::create($app, $twig));
-$controller = new Controller($container);
+$controller = new Controller($app);
 
 $app->get('/', [$controller, 'showHomepage'])->setName('home');
 $app->get('/urls', [$controller, 'showUrls'])->setName('urls');
 $app->get('/urls/{id:[0-9]+}', [$controller, 'showUrl'])->setName('url');
 $app->post('/urls', [$controller, 'addUrl'])->setName('add_url');
 $app->post('/urls/{id:[0-9]+}/checks', [$controller, 'checkUrl'])->setName('checks');
+$errorMiddleware->setErrorHandler(HttpNotFoundException::class, [$controller, 'showErrorPage']);
 
 $app->run();
